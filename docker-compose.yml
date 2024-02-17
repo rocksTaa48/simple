@@ -1,0 +1,62 @@
+version: '2.2'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: ./services/build/rails/Dockerfile
+    depends_on:
+      - database
+      - redis
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - gem_cache:/usr/local/bundle/gems
+    tty: true
+    stdin_open: true
+    env_file: ./services/environments/.env
+    environment:
+      RAILS_ENV: development
+
+  database:
+    image: postgres:15.6-alpine
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./services/etc/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    env_file: ./services/environments/.env
+
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    env_file: ./services/environments/.env
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - database
+
+  redis:
+    image: redis:7.2-alpine
+
+  sidekiq:
+    build:
+      context: .
+      dockerfile: ./services/build/rails/Dockerfile
+    depends_on:
+      - app
+      - database
+      - redis
+    volumes:
+      - .:/app
+      - gem_cache:/usr/local/bundle/gems
+    env_file: ./services/environments/.env
+    environment:
+      RAILS_ENV: development
+    entrypoint: ./services/entrypoints/sidekiq-entrypoint.sh
+
+volumes:
+  pgadmin_data:
+  gem_cache:
+  db_data:

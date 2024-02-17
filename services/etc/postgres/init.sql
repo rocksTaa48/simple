@@ -1,0 +1,2 @@
+CREATE USER rockstaa WITH PASSWORD 'rockstaa';
+ALTER USER rockstaa WITH SUPERUSER;
