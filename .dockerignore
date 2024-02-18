@@ -2,7 +2,7 @@
 
 # Ignore git directory.
 /.git/
-
+/.ruby-lsp
 # Ignore bundler config.
 /.bundle
 
